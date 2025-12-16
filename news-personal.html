@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Научный News TG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      line-height: 1.5;
+    }
+    .app { max-width: 1000px; margin: 0 auto; padding: 12px; }
+    header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #1f2937;
+    }
+    header h1 { font-size: 24px; margin: 0 0 4px 0; color: #fff; }
+    header .tagline { font-size: 13px; color: #9ca3af; }
+    header small { font-size: 11px; color: #6b7280; text-align: right; }
+    .card {
+      background: #111827; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+      box-shadow: 0 0 0 1px rgba(148,163,184,0.15);
+    }
+    .card h2 { font-size: 18px; margin: 0 0 12px 0; color: #fff; }
+    .card p { margin: 8px 0; font-size: 14px; }
+    .btn {
+      display: inline-block; padding: 10px 16px; border-radius: 999px;
+      border: none; cursor: pointer; font-size: 14px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary { background: #2f81f7; color: white; }
+    .btn-ghost { background: transparent; color: #e5e7eb; border: 1px solid #374151; }
+    .btn-ghost:hover { background: #1f2937; }
+    .btn-full { width: 100%; text-align: center; }
+    .btn.correct { background: #10b981; color: white; border: 2px solid #10b981; }
+    .btn.wrong { background: #ef4444; color: white; border: 2px solid #ef4444; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .menu-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid #1f2937; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .menu-item:hover { background: #0f172a; padding-left: 4px; }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item span { font-size: 15px; }
+    .menu-item .arrow { color: #6b7280; font-size: 18px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; font-size: 13px; }
+    .tab {
+      padding: 6px 12px; border-radius: 999px; background: #1f2937;
+      border: none; cursor: pointer; color: #9ca3af; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab:hover, .tab.active { background: #1d4ed8; color: white; }
+    .news-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 999px;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 600; color: white; flex-shrink: 0;
+    }
+    .news-meta { font-size: 13px; color: #9ca3af; }
+    .news-title { font-weight: 600; font-size: 16px; margin: 8px 0; line-height: 1.4; color: #fff; }
+    .news-body { font-size: 14px; margin: 10px 0; line-height: 1.6; color: #d1d5db; }
+    .tags { margin: 10px 0; }
+    .pill {
+      display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px;
+      background: #1f2937; border: 1px solid #374151; margin-right: 6px; margin-bottom: 4px;
+      color: #9ca3af;
+    }
+    .answer-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .answer-buttons .btn { flex: 1; min-width: 140px; }
+    .explain {
+      font-size: 13px; color: #d1d5db; border-left: 3px solid #4b5563;
+      padding-left: 12px; margin-top: 12px; background: #020617; padding: 12px; border-radius: 6px;
+    }
+    .explain b { color: #fff; display: block; margin-bottom: 6px; }
+    .stats-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px; font-size: 12px; color: #9ca3af; margin-top: 12px;
+      padding-top: 12px; border-top: 1px solid #1f2937;
+    }
+    .stat-item { text-align: center; padding: 8px; background: #0f172a; border-radius: 6px; }
+    .stat-number { font-size: 16px; font-weight: 600; color: #2f81f7; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: 12px; cursor: pointer; color: #2f81f7;
+    }
+    .global-stats {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px; margin-bottom: 12px;
+    }
+    .global-stats .stat-box {
+      background: #0f172a; padding: 12px; border-radius: 8px;
+      border-left: 3px solid #2f81f7;
+    }
+    .global-stats .stat-box.good { border-left-color: #10b981; }
+    .global-stats .stat-box.bad { border-left-color: #ef4444; }
+    .stat-label { font-size: 12px; color: #9ca3af; }
+    .stat-value { font-size: 20px; font-weight: 600; color: #fff; }
+    .news-counter { font-size: 12px; color: #9ca3af; margin-top: 12px; text-align: center; }
+    .topic-filter { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; }
+    .topic-btn {
+      padding: 6px 12px; border-radius: 999px; background: #1f2937;
+      border: 1px solid #374151; color: #9ca3af; cursor: pointer;
+      font-size: 12px; white-space: nowrap;
+    }
+    .topic-btn.active { background: #1d4ed8; border-color: #1d4ed8; color: white; }
+    .reference {
+      font-size: 13px; background: #0f172a; padding: 12px;
+      border-radius: 6px; margin: 8px 0;
+    }
+    .reference ul { margin: 4px 0; padding-left: 20px; }
+    .reference li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ГЛАВНОЕ МЕНЮ -->
+  <div id="screen-menu" class="screen active">
+    <header>
+      <div>
+        <h1>🔬 Научный News TG</h1>
+        <div class="tagline">Как отличить науку от фейков в новостях</div>
+      </div>
+      <small>Разработчик:<br>Зверев Григорий<br>10 л.</small>
+    </header>
+
+    <div class="card">
+      <h2>🎮 Режимы</h2>
+      <div class="menu-item" onclick="startGame1()">
+        <span>▶ Лента новостей<br><small style="color:#6b7280;font-size:12px;">Выбери: наука, псевдонаука или сомнения</small></span>
+        <span class="arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="startGame2()">
+        <span>📝 Редактор новости<br><small style="color:#6b7280;font-size:12px;">Собери из фейка научную новость</small></span>
+        <span class="arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showScreen('reference')">
+        <span>📚 Справочник<br><small style="color:#6b7280;font-size:12px;">Подсказки и примеры российских учёных</small></span>
+        <span class="arrow">›</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏅 Твой личный рейтинг</h2>
+      <div class="global-stats">
+        <div class="stat-box">
+          <div class="stat-label">Лучший результат</div>
+          <div class="stat-value" id="best-acc">0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Всего новостей пройдено</div>
+          <div class="stat-value" id="played-count">0</div>
+        </div>
+        <div class="stat-box good">
+          <div class="stat-label">Правильных ответов</div>
+          <div class="stat-value" id="right-count">0</div>
+        </div>
+        <div class="stat-box bad">
+          <div class="stat-label">Ошибок</div>
+          <div class="stat-value" id="wrong-count">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📈 Твой прогресс по темам</h2>
+      <p style="font-size:13px;color:#9ca3af;">Смотри, где ты силён, а где нужно потренироваться.</p>
+      <p style="font-size:14px;">
+        ⚛️ Физика: <b id="topic-physics">0%</b><br>
+        💊 Медицина: <b id="topic-medicine">0%</b><br>
+        🚀 Космос: <b id="topic-space">0%</b><br>
+        🧬 Биология: <b id="topic-biology">0%</b>
+      </p>
+    </div>
+  </div>
+
+  <!-- ИГРА 1: ЛЕНТА НОВОСТЕЙ -->
+  <div id="screen-game1" class="screen">
+    <div class="back-btn" onclick="showScreen('menu')">← Вернуться на главную</div>
+
+    <div class="card">
+      <h2>📰 Лента научных новостей России</h2>
+
+      <div class="topic-filter">
+        <button class="topic-btn active" data-topic="all" onclick="filterNewsByTopic(event, 'all')">Все</button>
+        <button class="topic-btn" data-topic="physics" onclick="filterNewsByTopic(event, 'physics')">⚛️ Физика</button>
+        <button class="topic-btn" data-topic="medicine" onclick="filterNewsByTopic(event, 'medicine')">💊 Медицина</button>
+        <button class="topic-btn" data-topic="space" onclick="filterNewsByTopic(event, 'space')">🚀 Космос</button>
+        <button class="topic-btn" data-topic="biology" onclick="filterNewsByTopic(event, 'biology')">🧬 Биология</button>
+      </div>
+
+      <div class="tabs" id="news-tabs"></div>
+
+      <div id="news-container"></div>
+
+      <div id="answer-block" style="display:none;">
+        <div class="answer-buttons" id="answer-buttons"></div>
+        <div id="explanation" class="explain" style="display:none;"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-label">Правильно</div>
+          <div class="stat-number" id="game1-correct">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Ошибок</div>
+          <div class="stat-number" id="game1-wrong">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Точность</div>
+          <div class="stat-number" id="game1-accuracy">0%</div>
+        </div>
+      </div>
+
+      <div class="news-counter">
+        Новость <span id="news-num">1</span> из <span id="news-total">0</span>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-ghost" onclick="showScreen('menu')">← В меню</button>
+        <button class="btn btn-primary" onclick="nextNews()">Следующая ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ИГРА 2: РЕДАКТОР НОВОСТИ -->
+  <div id="screen-game2" class="screen">
+    <div class="back-btn" onclick="showScreen('menu')">← Вернуться на главную</div>
+
+    <div class="card">
+      <h2>📝 Сделай новость научной</h2>
+      <p style="font-size:13px;color:#9ca3af;">Меняй заголовок, стиль, источники и методику, чтобы фейк превратился в нормальную научную заметку.</p>
+
+      <div class="news-title" id="editor-title"></div>
+      <div class="news-body" id="editor-body"></div>
+
+      <h3 style="margin-top:16px;margin-bottom:10px;font-size:14px;">Настройки:</h3>
+
+      <div style="font-size:13px;margin-bottom:6px;">Заголовок</div>
+      <div class="reference">
+        <label style="display:block;margin-bottom:6px;">
+          <input type="radio" name="headline" value="scandal" checked onchange="updateEditor()"> Скандальный («ШОК!», «100%»)
+        </label>
+        <label style="display:block;">
+          <input type="radio" name="headline" value="neutral" onchange="updateEditor()"> Нейтральный, как в научной статье
+        </label>
+      </div>
+
+      <div style="font-size:13px;margin-bottom:6px;">Источники</div>
+      <div class="reference">
+        <label style="display:block;margin-bottom:6px;">
+          <input type="radio" name="sources" value="none" checked onchange="updateEditor()"> Без ссылок, только «учёные доказали»
+        </label>
+        <label style="display:block;">
+          <input type="radio" name="sources" value="real" onchange="updateEditor()"> Есть ссылка на журнал и институт
+        </label>
+      </div>
+
+      <div style="font-size:13px;margin-bottom:6px;">Методика</div>
+      <div class="reference">
+        <label style="display:block;margin-bottom:6px;">
+          <input type="radio" name="method" value="none" checked onchange="updateEditor()"> Ничего не сказано
+        </label>
+        <label style="display:block;">
+          <input type="radio" name="method" value="detailed" onchange="updateEditor()"> Подробно: выборка, контроль, сроки
+        </label>
+      </div>
+
+      <div style="font-size:13px;margin-bottom:6px;">Стиль текста</div>
+      <div class="reference">
+        <label style="display:block;margin-bottom:6px;">
+          <input type="radio" name="style" value="emotional" checked onchange="updateEditor()"> Много эмоций и обещаний
+        </label>
+        <label style="display:block;">
+          <input type="radio" name="style" value="calm" onchange="updateEditor()"> Спокойный, с цифрами и фактами
+        </label>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="checkEditor()">Проверить новость</button>
+      <div id="editor-result" class="explain" style="display:none;margin-top:12px;"></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-ghost" onclick="showScreen('menu')">← В меню</button>
+        <button class="btn btn-primary" onclick="resetEditor()">Новая новость</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- СПРАВОЧНИК -->
+  <div id="screen-reference" class="screen">
+    <div class="back-btn" onclick="showScreen('menu')">← Вернуться на главную</div>
+
+    <div class="card">
+      <h2>📚 Как отличить науку от псевдонауки</h2>
+
+      <h3 style="color:#10b981;margin-top:16px;margin-bottom:8px;">✓ Признаки НАУЧНОЙ новости</h3>
+      <div class="reference">
+        <ul>
+          <li><b>Есть ссылка на рецензируемый журнал:</b> Nature, Science, PNAS, «Молекулярная биология», Journal of Medicinal Chemistry и др.</li>
+          <li><b>Указаны конкретные учёные и институты:</b> МГУ, РАН, МФТИ, РУДН, Сколтех, СО РАН, ИНМИ им. Гамалеи.</li>
+          <li><b>Описана методика:</b> сколько людей участвовало, как проводили эксперимент, какие приборы.</li>
+          <li><b>Честно указаны ограничения:</b> первая фаза, нужна проверка, небольшая выборка.</li>
+          <li><b>Можно найти оригинальную статью:</b> в Google Scholar, eLIBRARY, на сайте журнала.</li>
+          <li><b>Результаты подтверждены другими группами:</b> есть независимые исследования.</li>
+        </ul>
+      </div>
+
+      <h3 style="color:#ef4444;margin-top:16px;margin-bottom:8px;">✗ Признаки ПСЕВДОНАУЧНОЙ новости</h3>
+      <div class="reference">
+        <ul>
+          <li>Сенсационный заголовок с кучей восклицательных знаков и словами «шок», «скрываемая правда».</li>
+          <li>Фраза «Учёные доказали», но без имён, институтов и журналов.</li>
+          <li>Обещания чуда: «вылечит все болезни», «похудеешь на 30 кг за месяц», «омоложение на 20 лет».</li>
+          <li>Критика науки без аргументов: «врачи скрывают», «фармкомпании не дают узнать правду».</li>
+          <li>Новость заканчивается продажей: курс, прибор, таблетки, БАД.</li>
+          <li>Ссылки на странные «институты» и «журналы», которых нет в поиске.</li>
+        </ul>
+      </div>
+
+      <h3 style="color:#f59e0b;margin-top:16px;margin-bottom:8px;">? Новости, ВЫЗЫВАЮЩИЕ СОМНЕНИЯ</h3>
+      <div class="reference">
+        <ul>
+          <li>Исследование только началось: мало участников, короткий срок наблюдения.</li>
+          <li>Результаты сильно отличаются от того, что говорят учебники — нужно подтверждение.</li>
+          <li>Работа есть только в виде препринта (arXiv и др.), ещё не прошла рецензирование.</li>
+          <li>Учёные сами пишут: «нужны дополнительные исследования».</li>
+        </ul>
+      </div>
+
+      <h3 style="color:#3b82f6;margin-top:16px;margin-bottom:8px;">💡 Как тренировать критическое мышление</h3>
+      <div class="reference">
+        <ul>
+          <li>Всегда спрашивай: <b>кто это написал и зачем?</b></li>
+          <li>Ищи оригинальные исследования, а не только пересказы в блогах.</li>
+          <li>Проверяй дату публикации — информация могла устареть.</li>
+          <li>Сравни несколько источников: ТАСС «Наука», Наука.РФ, сайты МГУ и РАН.</li>
+          <li>Если новость вызывает сильные эмоции (страх, восторг) — сделай паузу и проверь факты.</li>
+        </ul>
+      </div>
+
+      <button class="btn btn-ghost btn-full" onclick="showScreen('menu')">← В меню</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Новости про Россию
+  const newsData = [
+    {
+      title: "Учёные МГУ разработали новый способ хранения солнечной энергии",
+      body: "Исследователи физического факультета МГУ имени Ломоносова совместно с коллегами из МФТИ создали прототип батареи на основе органических полупроводников. Результаты опубликованы в журнале Nature Energy. Выборка составила 320 образцов панелей, испытанных в течение 18 месяцев.",
+      emoji: "☀️", type: "scientific", topic: "physics",
+      explanation: "✓ Это научная новость, потому что:<br>• Указаны МГУ и МФТИ<br>• Есть ссылка на журнал Nature Energy<br>• Описана методика и сроки эксперимента<br>• Нет обещаний чуда, только конкретные результаты."
+    },
+    {
+      title: "НОВОЕ ЛЕКАРСТВО ОТ ПРОСТУДЫ!!! 100% ЭФФЕКТИВНОСТЬ!",
+      body: "Компания продаёт чудо-средство, которое якобы полностью избавляет от простуды за три дня. На сайте пишут: «Учёные доказали!», но нет ни имён, ни институтов, ни ссылок на журналы. В конце — кнопка «Купить сейчас со скидкой 70%».",
+      emoji: "💊", type: "pseudoscientific", topic: "medicine",
+      explanation: "✗ Это псевдонаучная новость, потому что:<br>• Сенсационный заголовок и 100% эффективность<br>• Нет имён учёных и институтов<br>• Нет ссылок на научные журналы<br>• Новость по сути — реклама товара."
+    },
+    {
+      title: "Физики РАН создали прототип 50-кубитного квантового компьютера",
+      body: "Учёные Физического института РАН и Российского квантового центра сообщили о создании прототипа квантового вычислителя на холодных атомах. Статья размещена на препринт-сервере arXiv и готовится к публикации в Physical Review Letters.",
+      emoji: "⚛️", type: "questionable", topic: "physics",
+      explanation: "? Это новость, вызывающая сомнения (но не фейк), потому что:<br>• Результат теоретически и технически сложный<br>• Работа ещё только на препринте, без рецензии<br>• Нужны независимые проверки от других групп."
+    },
+    {
+      title: "Исследователи РУДН создали препарат-кандидат от болезни Альцгеймера",
+      body: "Учёные Российского университета дружбы народов разработали препарат на основе внеклеточных везикул, который в экспериментах на животных снижает количество амилоидных бляшек. Сейчас идёт первая фаза клинических испытаний, о чём сообщается в журнале Brain Research.",
+      emoji: "🧠", type: "scientific", topic: "medicine",
+      explanation: "✓ Научная новость:<br>• Указан реальный университет (РУДН)<br>• Описан объект исследования и механизм действия<br>• Указана стадия испытаний (первая фаза)<br>• Есть ссылка на профильный журнал."
+    },
+    {
+      title: "Блогер обещает похудеть на 30 кг за месяц без диет и спорта",
+      body: "Популярный блогер рекламирует программу «Минус 30 кг за 30 дней». В ролике он говорит, что метод «одобрили учёные», но не приводит ни одной фамилии или ссылки. Цена курса — 9 990 рублей.",
+      emoji: "🍽️", type: "pseudoscientific", topic: "medicine",
+      explanation: "✗ Псевдонаучный фейк:<br>• Невозможный и опасный результат (30 кг за месяц)<br>• Нет никаких ссылок на врачей и исследования<br>• Единственная цель — продать курс<br>• Используется давление на эмоции и комплексы."
+    },
+    {
+      title: "Биологи СО РАН нашли новый вид бактерий в вечной мерзлоте",
+      body: "Экспедиция Сибирского отделения РАН обнаружила в вечной мерзлоте Якутии новый вид бактерий, способных разлагать органические вещества при очень низких температурах. Статья опубликована в журнале Applied and Environmental Microbiology.",
+      emoji: "🧬", type: "scientific", topic: "biology",
+      explanation: "✓ Научная новость:<br>• Указана организация (СО РАН)<br>• Описано, где и что нашли<br>• Есть ссылка на международный журнал<br>• Понятно, почему это важно для науки."
+    },
+    {
+      title: "Неизвестный «институт» предсказывает конец света в 2030 году",
+      body: "Сайт без контактов и авторов публикует «исследование», где якобы российские учёные доказывают скорый конец света. Нет имён, нет данных, только страшные картинки и просьба «делиться новостью».",
+      emoji: "🌋", type: "pseudoscientific", topic: "biology",
+      explanation: "✗ Псевдонаучный страшилка:<br>• Нет авторов и институтов<br>• Нет данных и методики<br>• Есть только эмоции и призыв делиться<br>• Классический пример фейка под видом науки."
+    },
+    {
+      title: "Инженеры Сколтеха удешевили производство водорода в 10 раз",
+      body: "Исследователи Сколковского института науки и технологий создали новый катализатор для электролиза воды. Его производство в десять раз дешевле существующих аналогов. Работа опубликована в журнале Nature Catalysis.",
+      emoji: "⚡", type: "scientific", topic: "physics",
+      explanation: "✓ Научная новость:<br>• Назван институт (Сколтех)<br>• Описана суть разработки (катализатор)<br>• Приведено количественное сравнение (в 10 раз дешевле)<br>• Есть ссылка на серьёзный журнал."
+    }
+  ];
+
+  let currentNewsIndex = 0;
+  let filteredNews = newsData.slice();
+  let game1Stats = { correct: 0, wrong: 0, total: 0 };
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // Личная статистика
+  function updatePersonalStats() {
+    const s = JSON.parse(localStorage.getItem('userStats') || '{"played":0,"right":0,"wrong":0,"bestAcc":0}');
+    document.getElementById('best-acc').textContent = s.bestAcc + '%';
+    document.getElementById('played-count').textContent = s.played;
+    document.getElementById('right-count').textContent = s.right;
+    document.getElementById('wrong-count').textContent = s.wrong;
+  }
+
+  function updateTopicStats() {
+    const t = JSON.parse(localStorage.getItem('topicStats') || '{}');
+    function acc(topic) {
+      if (!t[topic] || !t[topic].total) return '0%';
+      return Math.round(t[topic].right / t[topic].total * 100) + '%';
+    }
+    document.getElementById('topic-physics').textContent = acc('physics');
+    document.getElementById('topic-medicine').textContent = acc('medicine');
+    document.getElementById('topic-space').textContent = acc('space');
+    document.getElementById('topic-biology').textContent = acc('biology');
+  }
+
+  // Игра 1
+  function startGame1() {
+    game1Stats = { correct: 0, wrong: 0, total: 0 };
+    filteredNews = newsData.slice();
+    currentNewsIndex = 0;
+    buildTabs();
+    displayNews();
+    showScreen('game1');
+    document.getElementById('game1-correct').textContent = '0';
+    document.getElementById('game1-wrong').textContent = '0';
+    document.getElementById('game1-accuracy').textContent = '0%';
+  }
+
+  function buildTabs() {
+    const tabs = filteredNews.map((_, i) => `<button class="tab${i===0?' active':''}" onclick="switchNews(${i})">${i+1}</button>`).join('');
+    document.getElementById('news-tabs').innerHTML = tabs;
+    document.getElementById('news-total').textContent = filteredNews.length;
+  }
+
+  function filterNewsByTopic(ev, topic) {
+    document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+    ev.target.classList.add('active');
+    filteredNews = topic === 'all' ? newsData.slice() : newsData.filter(n => n.topic === topic);
+    currentNewsIndex = 0;
+    buildTabs();
+    displayNews();
+  }
+
+  function displayNews() {
+    const news = filteredNews[currentNewsIndex];
+    if (!news) return;
+    const time = `${String(9 + currentNewsIndex).padStart(2,'0')}:${String(10 + currentNewsIndex*3).padStart(2,'0')}`;
+    const html = `
+      <div class="news-header">
+        <div class="avatar">${news.emoji}</div>
+        <div>
+          <div style="font-weight:600;">Научные новости 🇷🇺</div>
+          <div class="news-meta">Сегодня в ${time}</div>
+        </div>
+      </div>
+      <div class="news-title">${news.title}</div>
+      <div class="news-body">${news.body}</div>
+      <div class="tags">
+        <span class="pill">#наука</span>
+        <span class="pill">#Россия</span>
+        <span class="pill">#${news.topic}</span>
+      </div>`;
+    document.getElementById('news-container').innerHTML = html;
+    document.getElementById('news-num').textContent = currentNewsIndex + 1;
+
+    document.getElementById('answer-buttons').innerHTML = `
+      <button class="btn btn-ghost" onclick="answer('scientific')">✓ Научная</button>
+      <button class="btn btn-ghost" onclick="answer('pseudoscientific')">✗ Псевдонаучная</button>
+      <button class="btn btn-ghost" onclick="answer('questionable')">? Сомневаюсь</button>`;
+    document.getElementById('answer-block').style.display = 'block';
+    document.getElementById('explanation').style.display = 'none';
+  }
+
+  function answer(selected) {
+    const news = filteredNews[currentNewsIndex];
+    const correct = selected === news.type;
+    const buttons = document.querySelectorAll('#answer-buttons .btn');
+
+    buttons.forEach(b => {
+      const t = b.textContent.trim();
+      const type = t.startsWith('✓') ? 'scientific' : t.startsWith('✗') ? 'pseudoscientific' : 'questionable';
+      if (type === news.type) b.classList.add('correct');
+      if (type === selected && !correct) b.classList.add('wrong');
+      b.disabled = true;
+    });
+
+    if (correct) game1Stats.correct++; else game1Stats.wrong++;
+    game1Stats.total++;
+
+    document.getElementById('explanation').innerHTML = news.explanation;
+    document.getElementById('explanation').style.display = 'block';
+
+    const accuracy = Math.round(game1Stats.correct / game1Stats.total * 100);
+    document.getElementById('game1-correct').textContent = game1Stats.correct;
+    document.getElementById('game1-wrong').textContent = game1Stats.wrong;
+    document.getElementById('game1-accuracy').textContent = isNaN(accuracy) ? '0%' : accuracy + '%';
+
+    // обновляем общую статистику игрока
+    let stats = JSON.parse(localStorage.getItem('userStats') || '{"played":0,"right":0,"wrong":0,"bestAcc":0}');
+    stats.played = game1Stats.total;
+    stats.right = game1Stats.correct;
+    stats.wrong = game1Stats.wrong;
+    if (accuracy > stats.bestAcc) stats.bestAcc = accuracy;
+    localStorage.setItem('userStats', JSON.stringify(stats));
+
+    // статистика по темам
+    let topicStats = JSON.parse(localStorage.getItem('topicStats') || '{}');
+    if (!topicStats[news.topic]) topicStats[news.topic] = { right:0, total:0 };
+    topicStats[news.topic].total++;
+    if (correct) topicStats[news.topic].right++;
+    localStorage.setItem('topicStats', JSON.stringify(topicStats));
+
+    updatePersonalStats();
+    updateTopicStats();
+  }
+
+  function nextNews() {
+    currentNewsIndex = (currentNewsIndex + 1) % filteredNews.length;
+    displayNews();
+  }
+
+  function switchNews(i) {
+    currentNewsIndex = i;
+    document.querySelectorAll('#news-tabs .tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+    displayNews();
+  }
+
+  // Игра 2
+  const editorTemplates = [
+    {
+      baseTitle: "Чудо-лекарство навсегда избавит от простуды!!!",
+      baseBody: "Компания заявляет, что новые капли полностью защищают от простуды. Никаких ссылок на исследования нет, но есть много восторженных отзывов в соцсетях.",
+      journal: "Virology Research",
+      institute: "НИИ гриппа ФМБА России"
+    },
+    {
+      baseTitle: "Секретный прибор лечит все болезни без врачей",
+      baseBody: "Автор устройства обещает, что специальный браслет нормализует давление, убирает головную боль и даже лечит диабет. В описании нет ни одного упоминания клинических испытаний.",
+      journal: "Journal of Medical Devices",
+      institute: "Национальный медицинский исследовательский центр кардиологии"
+    }
+  ];
+  let currentTemplate = 0;
+
+  function startGame2() {
+    currentTemplate = 0;
+    resetEditor();
+    showScreen('game2');
+  }
+
+  function updateEditor() {
+    const tpl = editorTemplates[currentTemplate];
+    const headline = document.querySelector('input[name="headline"]:checked').value;
+    const sources = document.querySelector('input[name="sources"]:checked').value;
+    const method = document.querySelector('input[name="method"]:checked').value;
+    const style = document.querySelector('input[name="style"]:checked').value;
+
+    let title = headline === 'scandal'
+      ? tpl.baseTitle
+      : 'Исследование эффективности нового подхода, проведённое в ' + tpl.institute;
+
+    let body = tpl.baseBody;
+
+    if (style === 'calm') {
+      body = 'Учёные ' + tpl.institute + ' провели клиническое исследование с участием 120 добровольцев.';
+    }
+
+    if (method === 'detailed') {
+      body += ' Испытания прошли в формате рандомизированного двойного слепого исследования: часть участников получала плацебо, часть — активный препарат. Период наблюдения составил 4 недели.';
+    }
+
+    if (sources === 'real') {
+      body += ' Результаты опубликованы в журнале ' + tpl.journal + ' и доступны в базе данных eLIBRARY.';
+    }
+
+    document.getElementById('editor-title').textContent = title;
+    document.getElementById('editor-body').textContent = body;
+  }
+
+  function checkEditor() {
+    const headline = document.querySelector('input[name="headline"]:checked').value;
+    const sources = document.querySelector('input[name="sources"]:checked').value;
+    const method = document.querySelector('input[name="method"]:checked').value;
+    const style = document.querySelector('input[name="style"]:checked').value;
+
+    let score = 0;
+    let feedback = '<b>Анализ новости:</b><br>';
+
+    if (headline === 'neutral') { score += 25; feedback += '✓ Спокойный заголовок без крика<br>'; }
+    else { feedback += '✗ Скандальный заголовок — это признак фейка<br>'; }
+
+    if (sources === 'real') { score += 25; feedback += '✓ Есть ссылка на журнал и институт<br>'; }
+    else { feedback += '✗ Нет конкретных источников<br>'; }
+
+    if (method === 'detailed') { score += 25; feedback += '✓ Описана методика: выборка, плацебо, сроки<br>'; }
+    else { feedback += '✗ Неясно, как именно проверяли эффективность<br>'; }
+
+    if (style === 'calm') { score += 25; feedback += '✓ Спокойный стиль с фактами и цифрами<br>'; }
+    else { feedback += '✗ Слишком много эмоций и обещаний<br>'; }
+
+    feedback += `<br><b>Оценка научности: ${score}%</b>`;
+    document.getElementById('editor-result').innerHTML = feedback;
+    document.getElementById('editor-result').style.display = 'block';
+  }
+
+  function resetEditor() {
+    document.querySelector('input[name="headline"][value="scandal"]').checked = true;
+    document.querySelector('input[name="sources"][value="none"]').checked = true;
+    document.querySelector('input[name="method"][value="none"]').checked = true;
+    document.querySelector('input[name="style"][value="emotional"]').checked = true;
+    document.getElementById('editor-result').style.display = 'none';
+    document.getElementById('editor-title').textContent = editorTemplates[currentTemplate].baseTitle;
+    document.getElementById('editor-body').textContent = editorTemplates[currentTemplate].baseBody;
+    updateEditor();
+  }
+
+  // Инициализация
+  updatePersonalStats();
+  updateTopicStats();
+</script>
+
+</body>
+</html>
